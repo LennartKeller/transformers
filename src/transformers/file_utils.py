@@ -493,7 +493,7 @@ def add_code_sample_docstrings(*docstr, tokenizer_class=None, checkpoint=None, o
         model_class = fn.__qualname__.split(".")[0]
         is_tf_class = model_class[:2] == "TF"
 
-        if "SequenceClassification" in model_class:
+        if "SequenceClassification" in model_class or "MultilabelClassification":
             code_sample = TF_SEQUENCE_CLASSIFICATION_SAMPLE if is_tf_class else PT_SEQUENCE_CLASSIFICATION_SAMPLE
         elif "QuestionAnswering" in model_class:
             code_sample = TF_QUESTION_ANSWERING_SAMPLE if is_tf_class else PT_QUESTION_ANSWERING_SAMPLE
