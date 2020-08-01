@@ -311,6 +311,7 @@ if is_torch_available():
         DistilBertForQuestionAnswering,
         DistilBertForTokenClassification,
         DISTILBERT_PRETRAINED_MODEL_ARCHIVE_LIST,
+        DistilBertForMultilabelClassification
     )
     from .modeling_camembert import (
         CamembertForMaskedLM,
