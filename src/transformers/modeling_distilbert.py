@@ -650,8 +650,7 @@ class DistilBertForSequenceClassification(DistilBertPreTrainedModel):
         )
 
 @add_start_docstrings(
-    """DistilBert Model transformer with a sequence classification/regression head on top (a linear layer on top of
-    the pooled output) e.g. for GLUE tasks. """,
+    """DistilBert Model transformer with a mutlilabel classficiation head """,
     DISTILBERT_START_DOCSTRING,
 )
 class DistilBertForMultilabelClassification(DistilBertPreTrainedModel):
