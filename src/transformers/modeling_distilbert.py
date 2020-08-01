@@ -709,9 +709,8 @@ class DistilBertForMultilabelClassification(DistilBertPreTrainedModel):
 
         loss = None
         if labels is not None:
-
             loss_fct = nn.BCEWithLogitsLoss()
-            loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
+            loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1, self.num_labels))
 
         if not return_dict:
             output = (logits,) + distilbert_output[1:]
