@@ -1,3 +1,9 @@
+# TODOS
+
+* Create Multilabel-Model for BERT and RoBerta
+* Add bottleneck layer like in TextCNN-Modell
+* Play with learning rate
+
 <p align="center">
     <br>
     <img src="https://raw.githubusercontent.com/huggingface/transformers/master/docs/source/imgs/transformers_logo_name.png" width="400"/>
