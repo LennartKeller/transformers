@@ -253,6 +253,7 @@ _import_structure = {
     "models.resnet": ["RESNET_PRETRAINED_CONFIG_ARCHIVE_MAP", "ResNetConfig"],
     "models.retribert": ["RETRIBERT_PRETRAINED_CONFIG_ARCHIVE_MAP", "RetriBertConfig", "RetriBertTokenizer"],
     "models.roberta": ["ROBERTA_PRETRAINED_CONFIG_ARCHIVE_MAP", "RobertaConfig", "RobertaTokenizer"],
+    "models.pyramidions": ["PYRAMIDIONS_PRETRAINED_CONFIG_ARCHIVE_MAP", "PyramidionsConfig"],
     "models.roformer": ["ROFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP", "RoFormerConfig", "RoFormerTokenizer"],
     "models.segformer": ["SEGFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP", "SegformerConfig"],
     "models.sew": ["SEW_PRETRAINED_CONFIG_ARCHIVE_MAP", "SEWConfig"],
@@ -1408,6 +1409,19 @@ if is_torch_available():
             "RobertaPreTrainedModel",
         ]
     )
+    _import_structure["models.pyramidions"].extend(
+        [
+            "PYRAMIDIONS_PRETRAINED_MODEL_ARCHIVE_LIST",
+            "PyramidionsForCausalLM",
+            "PyramidionsForMaskedLM",
+            "PyramidionsForMultipleChoice",
+            "PyramidionsForQuestionAnswering",
+            "PyramidionsForSequenceClassification",
+            "PyramidionsForTokenClassification",
+            "PyramidionsModel",
+            "PyramidionsPreTrainedModel",
+        ]
+    )
     _import_structure["models.roformer"].extend(
         [
             "ROFORMER_PRETRAINED_MODEL_ARCHIVE_LIST",
@@ -2119,6 +2133,20 @@ if is_tf_available():
             "TFRobertaPreTrainedModel",
         ]
     )
+    _import_structure["models.pyramidions"].extend(
+        [
+            "TF_PYRAMIDIONS_PRETRAINED_MODEL_ARCHIVE_LIST",
+            "TFPyramidionsForCausalLM",
+            "TFPyramidionsForMaskedLM",
+            "TFPyramidionsForMultipleChoice",
+            "TFPyramidionsForQuestionAnswering",
+            "TFPyramidionsForSequenceClassification",
+            "TFPyramidionsForTokenClassification",
+            "TFPyramidionsMainLayer",
+            "TFPyramidionsModel",
+            "TFPyramidionsPreTrainedModel",
+        ]
+    )
     _import_structure["models.roformer"].extend(
         [
             "TF_ROFORMER_PRETRAINED_MODEL_ARCHIVE_LIST",
@@ -2432,6 +2460,18 @@ if is_flax_available():
             "FlaxRobertaPreTrainedModel",
         ]
     )
+    _import_structure["models.pyramidions"].extend(
+        [
+            "FlaxPyramidionsForCausalLM",
+            "FlaxPyramidionsForMaskedLM",
+            "FlaxPyramidionsForMultipleChoice",
+            "FlaxPyramidionsForQuestionAnswering",
+            "FlaxPyramidionsForSequenceClassification",
+            "FlaxPyramidionsForTokenClassification",
+            "FlaxPyramidionsModel",
+            "FlaxPyramidionsPreTrainedModel",
+        ]
+    )
     _import_structure["models.roformer"].extend(
         [
             "FlaxRoFormerForMaskedLM",
@@ -2668,6 +2708,7 @@ if TYPE_CHECKING:
     from .models.resnet import RESNET_PRETRAINED_CONFIG_ARCHIVE_MAP, ResNetConfig
     from .models.retribert import RETRIBERT_PRETRAINED_CONFIG_ARCHIVE_MAP, RetriBertConfig, RetriBertTokenizer
     from .models.roberta import ROBERTA_PRETRAINED_CONFIG_ARCHIVE_MAP, RobertaConfig, RobertaTokenizer
+    from .models.pyramidions import PYRAMIDIONS_PRETRAINED_CONFIG_ARCHIVE_MAP, PyramidionsConfig
     from .models.roformer import ROFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP, RoFormerConfig, RoFormerTokenizer
     from .models.segformer import SEGFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP, SegformerConfig
     from .models.sew import SEW_PRETRAINED_CONFIG_ARCHIVE_MAP, SEWConfig
@@ -3638,6 +3679,17 @@ if TYPE_CHECKING:
             RobertaModel,
             RobertaPreTrainedModel,
         )
+        from .models.pyramidions import (
+            PYRAMIDIONS_PRETRAINED_MODEL_ARCHIVE_LIST,
+            PyramidionsForCausalLM,
+            PyramidionsForMaskedLM,
+            PyramidionsForMultipleChoice,
+            PyramidionsForQuestionAnswering,
+            PyramidionsForSequenceClassification,
+            PyramidionsForTokenClassification,
+            PyramidionsModel,
+            PyramidionsPreTrainedModel,
+        )
         from .models.roformer import (
             ROFORMER_PRETRAINED_MODEL_ARCHIVE_LIST,
             RoFormerForCausalLM,
@@ -4219,6 +4271,18 @@ if TYPE_CHECKING:
             TFRobertaModel,
             TFRobertaPreTrainedModel,
         )
+        from .models.pyramidions import (
+            TF_PYRAMIDIONS_PRETRAINED_MODEL_ARCHIVE_LIST,
+            TFPyramidionsForCausalLM,
+            TFPyramidionsForMaskedLM,
+            TFPyramidionsForMultipleChoice,
+            TFPyramidionsForQuestionAnswering,
+            TFPyramidionsForSequenceClassification,
+            TFPyramidionsForTokenClassification,
+            TFPyramidionsMainLayer,
+            TFPyramidionsModel,
+            TFPyramidionsPreTrainedModel,
+        )
         from .models.roformer import (
             TF_ROFORMER_PRETRAINED_MODEL_ARCHIVE_LIST,
             TFRoFormerForCausalLM,
@@ -4462,6 +4526,16 @@ if TYPE_CHECKING:
             FlaxRobertaForTokenClassification,
             FlaxRobertaModel,
             FlaxRobertaPreTrainedModel,
+        )
+        from .models.pyramidions import (
+            FlaxPyramidionsForCausalLM,
+            FlaxPyramidionsForMaskedLM,
+            FlaxPyramidionsForMultipleChoice,
+            FlaxPyramidionsForQuestionAnswering,
+            FlaxPyramidionsForSequenceClassification,
+            FlaxPyramidionsForTokenClassification,
+            FlaxPyramidionsModel,
+            FlaxPyramidionsPreTrainedModel,
         )
         from .models.roformer import (
             FlaxRoFormerForMaskedLM,

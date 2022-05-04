@@ -101,6 +101,7 @@ from . import (
     resnet,
     retribert,
     roberta,
+    pyramidions,
     roformer,
     segformer,
     sew,
