@@ -21,7 +21,7 @@ from typing import List, Optional, Tuple, Union
 import torch
 import torch.utils.checkpoint
 from packaging import version
-from torch import nn
+from torch import Tensor, nn
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 
 from ...activations import ACT2FN, gelu
@@ -327,7 +327,6 @@ class PyramidionsSelfAttention(nn.Module):
 
         attention_scores = attention_scores / math.sqrt(self.attention_head_size)
         if attention_mask is not None:
-            # Apply the attention mask is (precomputed for all layers in PyramidionsModel forward() function)
             attention_scores = attention_scores + attention_mask
 
         # Normalize the attention scores to probabilities.
@@ -465,6 +464,7 @@ class PyramidionsLayer(nn.Module):
             self.crossattention = PyramidionsAttention(config, position_embedding_type="absolute")
         self.intermediate = PyramidionsIntermediate(config)
         self.output = PyramidionsOutput(config)
+        self.pooler = TopKPooler(embedding_dim=config.hidden_size)
 
     def forward(
         self,
@@ -478,6 +478,10 @@ class PyramidionsLayer(nn.Module):
     ) -> Tuple[torch.Tensor]:
         # decoder uni-directional self-attention cached key/values tuple is at positions 1,2
         self_attn_past_key_value = past_key_value[:2] if past_key_value is not None else None
+        
+        # FIXME: Hacky hack... But it actually seems to work...
+        attention_mask = attention_mask[..., :hidden_states.size(1)]
+        #print(f"Attention mask size: {attention_mask.size()}")
         self_attention_outputs = self.attention(
             hidden_states,
             attention_mask,
@@ -527,6 +531,9 @@ class PyramidionsLayer(nn.Module):
         # if decoder, return the attn key/values as the last output
         if self.is_decoder:
             outputs = outputs + (present_key_value,)
+        if not self.is_decoder:
+             outputs = (self.pooler(outputs[0]), ) + outputs[1:]
+             print("!")
 
         return outputs
 
