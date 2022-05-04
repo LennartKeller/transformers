@@ -58,6 +58,82 @@ PYRAMIDIONS_PRETRAINED_MODEL_ARCHIVE_LIST = [
     # See all pyramidions models at https://huggingface.co/models?filter=pyramidions
 ]
 
+def peaked_softmax(x: Tensor, alpha: float = 0.1, dim: int = 0):
+    x = x * alpha
+    softmax = nn.Softmax(dim=dim)
+    return softmax(x)
+
+class TopKPooler(nn.Module):
+
+    def __init__(self, embedding_dim: int) -> None:
+        super().__init__()
+        self.scorer = nn.Sequential(
+            nn.Linear(in_features=embedding_dim, out_features=1),
+            nn.Sigmoid()
+        )
+    
+    def forward(self, embeddings: Tensor):
+        """_summary_
+
+        Args:
+            embeddings (Tensor): tensor of shape (batch_size, n_embeddings,
+        """
+        # 1. Score embeddings
+        scores = self.scorer(embeddings)
+        
+        # 2. Sort embeddings according to their score in descending order
+        embeddings_sorted, scores_sorted = self.sort_embeddings(embeddings=embeddings, scores=scores)
+
+        # 3. Create new tensors with pairs of embeddings and scores
+        # Create embeddings pairs
+
+        middle_idx = int(embeddings.size(1) // 2)
+        #print(middle_idx)
+
+        left_embeddings, right_embeddings = embeddings_sorted[:, :middle_idx, :], embeddings_sorted[:, middle_idx:, :]
+        embedding_pairs = torch.cat((left_embeddings.unsqueeze(3), right_embeddings.flip(1).unsqueeze(3)), dim=3)
+        #print(embedding_pairs.size())  # shape: bs, seqlen // 2, n_dim, 2
+
+        # Create score pairs
+
+        left_scores, right_scores = scores_sorted[:, :middle_idx, :], scores_sorted[:, middle_idx:, :]
+        score_pairs = torch.cat((left_scores.unsqueeze(3), right_scores.flip(1).unsqueeze(3)), dim=3)
+        #print(score_pairs.size())  # shape: bs, seqlen // 2, 1, 2
+
+        score_pairs_softmaxed = peaked_softmax(score_pairs, alpha=5.0, dim=3)
+        #print(score_pairs_softmaxed.size())
+
+        new_embeddings = (embedding_pairs * score_pairs_softmaxed).sum(dim=3)
+        #print(new_embeddings.size())
+        return new_embeddings    
+    
+    def sort_embeddings(self, embeddings: Tensor, scores: Tensor):
+        """Sorts the embeddings and score according to their score in descending order
+
+        Args:
+            embeddings (Tensor): tensor of shape (batch_size, n_embeddings, n_dims)
+            scores (Tensor): (batch_size, n_embeddings, 1)
+
+        Returns:
+            _type_: Sorted embeddings and scores
+        """
+        sort_idc = scores.sort(descending=True, dim=1).indices
+        #print(sort_idc.size())
+        
+        embeddings_sorted = self.sort_by_indices(embeddings, sort_idc)  #???
+        #print(embeddings_sorted.size())
+        
+        scores_sorted = self.sort_by_indices(scores, sort_idc)  #???
+        #print(scores_sorted.size())
+        
+        return embeddings_sorted, scores_sorted
+    
+    @staticmethod
+    def sort_by_indices(embeddings, indices):
+        sorted_batches = []
+        for batch_embeddings, batch_scores in zip(embeddings, indices):
+            sorted_batches.append(batch_embeddings[batch_scores.reshape(-1)].unsqueeze(0))
+        return torch.cat(sorted_batches, dim=0)
 
 
 # Copied from transformers.models.roberta.modeling_roberta.RobertaEmbeddings with Roberta->Pyramidions
