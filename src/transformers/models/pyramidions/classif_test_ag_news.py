@@ -72,8 +72,8 @@ from transformers import Trainer, TrainingArguments, DataCollatorWithPadding
 
 training_args = TrainingArguments(
     num_train_epochs=3,
-    output_dir="pyramid_classif_ag_news",
-    logging_dir="pyramid_classif_ag_news/logs",
+    output_dir="test_runs/run/pyramid_classif_ag_news",
+    logging_dir="test_runs/logs/pyramid_classif_ag_news",
     per_device_train_batch_size=64,
     per_device_eval_batch_size=128,
     learning_rate=3e-5,

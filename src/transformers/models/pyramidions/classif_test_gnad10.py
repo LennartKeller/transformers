@@ -25,7 +25,7 @@ tokenizer.init_kwargs["model_max_length"] = 512
 
 
 config = PyramidionsConfig()
-config.update({"num_hidden_layers": 9, "max_position_embeddings": 512, "type_vocab_size": 1, "num_labels": 10})
+config.update({"num_hidden_layers": 9, "max_position_embeddings": 514, "type_vocab_size": 1, "num_labels": 10})
 print(config)
 model = PyramidionsForSequenceClassification(config)
 
@@ -74,10 +74,10 @@ from transformers import Trainer, TrainingArguments, DataCollatorWithPadding
 
 training_args = TrainingArguments(
     num_train_epochs=3,
-    output_dir="pyramid_classif_gnad10",
-    logging_dir="pyramid_classif_gnad10/logs",
-    per_device_train_batch_size=64,
-    per_device_eval_batch_size=128,
+    output_dir="test_runs/run/pyramid_classif_gnad10",
+    logging_dir="test_runs/logs/pyramid_classif_gnad10",
+    per_device_train_batch_size=1,
+    per_device_eval_batch_size=1,
     learning_rate=3e-5,
     logging_strategy="steps",
     logging_steps=1,
@@ -89,7 +89,7 @@ trainer = Trainer(
     model=model,
     tokenizer=tokenizer,
     args=training_args,
-    data_collator=DataCollatorWithPadding(padding="max_length", max_length=514, tokenizer=tokenizer),
+    data_collator=DataCollatorWithPadding(padding="max_length", max_length=tokenizer.model_max_length, tokenizer=tokenizer),
     train_dataset=dataset["train"],
     eval_dataset=dataset["test"],
     compute_metrics=compute_metrics
