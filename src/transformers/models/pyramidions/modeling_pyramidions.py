@@ -72,7 +72,7 @@ class TopKPooler(nn.Module):
             nn.Sigmoid()
         )
     
-    def forward(self, embeddings: Tensor):
+    def forward(self, embeddings: Tensor) -> Tuple[Tensor]:
         """_summary_
 
         Args:
@@ -107,7 +107,7 @@ class TopKPooler(nn.Module):
         #print(new_embeddings.size())
         return new_embeddings    
     
-    def sort_embeddings(self, embeddings: Tensor, scores: Tensor):
+    def sort_embeddings(self, embeddings: Tensor, scores: Tensor) -> Tuple[Tensor]:
         """Sorts the embeddings and score according to their score in descending order
 
         Args:
