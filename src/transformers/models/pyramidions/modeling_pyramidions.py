@@ -533,7 +533,6 @@ class PyramidionsLayer(nn.Module):
             outputs = outputs + (present_key_value,)
         if not self.is_decoder:
              outputs = (self.pooler(outputs[0]), ) + outputs[1:]
-             print("!")
 
         return outputs
 
