@@ -25,7 +25,7 @@ tokenizer.init_kwargs["model_max_length"] = 512
 
 
 config = PyramidionsConfig()
-config.update({"num_hidden_layers": 9, "max_position_embeddings": 514, "type_vocab_size": 1, "num_labels": 10})
+config.update({"num_hidden_layers": 9, "max_position_embeddings": 512, "type_vocab_size": 1, "num_labels": 10})
 print(config)
 model = PyramidionsForSequenceClassification(config)
 
