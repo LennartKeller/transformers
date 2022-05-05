@@ -57,8 +57,8 @@ dataset.set_format("torch")
 dataset.rename_column("label", "labels")
 dataset.remove_columns("text")
 
-dataset = dataset["train"].train_test_split(test_size=0.1, seed=42)["test"]
-dataset = dataset.train_test_split(test_size=0.05, seed=42)
+#dataset = dataset["train"].train_test_split(test_size=0.1, seed=42)["test"]
+#dataset = dataset.train_test_split(test_size=0.05, seed=42)
 
 from sklearn.metrics import f1_score
 def compute_metrics(p: EvalPrediction):
