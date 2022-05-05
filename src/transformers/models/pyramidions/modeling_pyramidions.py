@@ -73,7 +73,7 @@ def parametrized_softmax(x: Tensor, alpha: float = 0.1, dim: int = 0) -> Tensor:
     softmax = nn.Softmax(dim=dim)
     return softmax(x)
 
-def peaked_softmax1(x: Tensor, dim: int = 0) -> Tensor:
+def peaked_softmax(x: Tensor, dim: int = 0) -> Tensor:
     """
     Implementation according to pseudocode in https://arxiv.org/pdf/2010.15552.pdf
     """
