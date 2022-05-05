@@ -15,11 +15,13 @@ import numpy as np
 
 
 
-from transformers import PyramidionsConfig, PyramidionsModel, RobertaTokenizer, PyramidionsForSequenceClassification
+from transformers import PyramidionsConfig, PyramidionsModel, RobertaTokenizerFast, PyramidionsForSequenceClassification
 
 
 print("Creating model...")
-tokenizer = RobertaTokenizer.from_pretrained("uklfr/gottbert-base")
+tokenizer = RobertaTokenizerFast.from_pretrained("uklfr/gottbert-base")
+tokenizer.model_max_length = 512
+tokenizer.init_kwargs["model_max_length"] = 512
 
 
 config = PyramidionsConfig()
