@@ -58,10 +58,27 @@ PYRAMIDIONS_PRETRAINED_MODEL_ARCHIVE_LIST = [
     # See all pyramidions models at https://huggingface.co/models?filter=pyramidions
 ]
 
-def peaked_softmax(x: Tensor, alpha: float = 0.1, dim: int = 0):
+def parametrized_softmax(x: Tensor, alpha: float = 0.1, dim: int = 0) -> Tensor:
+    """Also referred to as peaked_softmax in https://arxiv.org/pdf/1708.00111.pdf
+
+    Args:
+        x (Tensor): Values 
+        alpha (float, optional): "Controlls the steepness of the slope". Defaults to 0.1.
+        dim (int, optional): Dimension to apply softmax to . Defaults to 0.
+
+    Returns:
+        Tensor: Softmaxed values
+    """
     x = x * alpha
     softmax = nn.Softmax(dim=dim)
     return softmax(x)
+
+def peaked_softmax1(x: Tensor, dim: int = 0) -> Tensor:
+    """
+    Implementation according to pseudocode in https://arxiv.org/pdf/2010.15552.pdf
+    """
+    denom = torch.sum(torch.exp(x) - torch.exp(torch.max(x, dim=dim).values.unsqueeze(dim)), dim=dim).unsqueeze(dim)
+    return x * (1/denom)
 
 class TopKPooler(nn.Module):
 
@@ -100,7 +117,7 @@ class TopKPooler(nn.Module):
         score_pairs = torch.cat((left_scores.unsqueeze(3), right_scores.flip(1).unsqueeze(3)), dim=3)
         #print(score_pairs.size())  # shape: bs, seqlen // 2, 1, 2
 
-        score_pairs_softmaxed = peaked_softmax(score_pairs, alpha=5.0, dim=3)
+        score_pairs_softmaxed = parametrized_softmax(score_pairs, alpha=5.0, dim=3)
         #print(score_pairs_softmaxed.size())
 
         new_embeddings = (embedding_pairs * score_pairs_softmaxed).sum(dim=3)

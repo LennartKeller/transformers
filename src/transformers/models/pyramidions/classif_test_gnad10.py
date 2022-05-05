@@ -19,11 +19,11 @@ from transformers import PyramidionsConfig, PyramidionsModel, RobertaTokenizer, 
 
 
 print("Creating model...")
-tokenizer = RobertaTokenizer.from_pretrained("roberta-base")
+tokenizer = RobertaTokenizer.from_pretrained("uklfr/gottbert-base")
 
 
 config = PyramidionsConfig()
-config.update({"num_hidden_layers": 9, "max_position_embeddings": 514, "type_vocab_size": 1, "num_labels": 4})
+config.update({"num_hidden_layers": 9, "max_position_embeddings": 514, "type_vocab_size": 1, "num_labels": 10})
 print(config)
 model = PyramidionsForSequenceClassification(config)
 
@@ -33,7 +33,7 @@ model.resize_token_embeddings(len(tokenizer))
 print("Loading pretrained model and copying weights...")
 from transformers import RobertaModel
 
-pretrained_model = RobertaModel.from_pretrained("roberta-base")
+pretrained_model = RobertaModel.from_pretrained("uklfr/gottbert-base")
 
 
 
@@ -48,7 +48,7 @@ model.load_state_dict(rename_roberta_state_dict(pretrained_model.state_dict()), 
 print("Preparing data")
 from datasets import load_dataset
 
-dataset = load_dataset("ag_news")
+dataset = load_dataset("gnad10")
 
 
 dataset = dataset.map(lambda row: tokenizer(row["text"], truncation=True))
@@ -72,8 +72,8 @@ from transformers import Trainer, TrainingArguments, DataCollatorWithPadding
 
 training_args = TrainingArguments(
     num_train_epochs=3,
-    output_dir="pyramid_classif",
-    logging_dir="pyramid_classif/logs",
+    output_dir="pyramid_classif_gnad10",
+    logging_dir="pyramid_classif_gnad10/logs",
     per_device_train_batch_size=64,
     per_device_eval_batch_size=128,
     learning_rate=3e-5,
