@@ -132,7 +132,7 @@ class TopKPooler(nn.Module):
             scores (Tensor): (batch_size, n_embeddings, 1)
 
         Returns:
-            _type_: Sorted embeddings and scores
+            Tuple[Tensor]: Sorted embeddings and scores
         """
         sort_idc = scores.sort(descending=True, dim=1).indices
         #print(sort_idc.size())
