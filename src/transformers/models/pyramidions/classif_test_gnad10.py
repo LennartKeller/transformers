@@ -25,7 +25,7 @@ tokenizer.init_kwargs["model_max_length"] = 512
 
 
 config = PyramidionsConfig()
-config.update({"num_hidden_layers": 9, "max_position_embeddings": 514, "type_vocab_size": 1, "num_labels": 10})
+config.update({"num_hidden_layers": 9, "max_position_embeddings": 514, "type_vocab_size": 1, "num_labels": 9})
 print(config)
 model = PyramidionsForSequenceClassification(config)
 
@@ -56,8 +56,8 @@ dataset = load_dataset("gnad10")
 dataset = dataset.map(lambda row: tokenizer(row["text"], truncation=True))
 
 dataset.set_format("torch")
-dataset.rename_column("label", "labels")
-dataset.remove_columns("text")
+dataset = dataset.rename_column("label", "labels")
+dataset = dataset.remove_columns("text")
 
 #dataset = dataset["train"].train_test_split(test_size=0.1, seed=42)["test"]
 #dataset = dataset.train_test_split(test_size=0.05, seed=42)
@@ -76,13 +76,13 @@ training_args = TrainingArguments(
     num_train_epochs=3,
     output_dir="test_runs/run/pyramid_classif_gnad10",
     logging_dir="test_runs/logs/pyramid_classif_gnad10",
-    per_device_train_batch_size=1,
-    per_device_eval_batch_size=1,
+    per_device_train_batch_size=64,
+    per_device_eval_batch_size=128,
     learning_rate=3e-5,
     logging_strategy="steps",
     logging_steps=1,
     evaluation_strategy="steps",
-    eval_steps=200
+    eval_steps=20
 )
 
 trainer = Trainer(
