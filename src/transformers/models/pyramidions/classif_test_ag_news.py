@@ -15,11 +15,11 @@ import numpy as np
 
 
 
-from transformers import PyramidionsConfig, PyramidionsModel, RobertaTokenizer, PyramidionsForSequenceClassification
+from transformers import PyramidionsConfig, PyramidionsModel, RobertaTokenizerFast, PyramidionsForSequenceClassification
 
 
 print("Creating model...")
-tokenizer = RobertaTokenizer.from_pretrained("roberta-base")
+tokenizer = RobertaTokenizerFast.from_pretrained("roberta-base")
 
 
 config = PyramidionsConfig()
