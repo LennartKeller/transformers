@@ -82,12 +82,13 @@ def peaked_softmax(x: Tensor, dim: int = 0) -> Tensor:
 
 class TopKPooler(nn.Module):
 
-    def __init__(self, embedding_dim: int) -> None:
+    def __init__(self, embedding_dim: int, alpha: float = 3.0) -> None:
         super().__init__()
         self.scorer = nn.Sequential(
             nn.Linear(in_features=embedding_dim, out_features=1),
             nn.Sigmoid()
         )
+        self.alpha = alpha
     
     def forward(self, embeddings: Tensor) -> Tuple[Tensor]:
         """_summary_
@@ -117,7 +118,7 @@ class TopKPooler(nn.Module):
         score_pairs = torch.cat((left_scores.unsqueeze(3), right_scores.flip(1).unsqueeze(3)), dim=3)
         #print(score_pairs.size())  # shape: bs, seqlen // 2, 1, 2
 
-        score_pairs_softmaxed = parametrized_softmax(score_pairs, alpha=5.0, dim=3)
+        score_pairs_softmaxed = parametrized_softmax(score_pairs, alpha=self.alpha, dim=3)
         #print(score_pairs_softmaxed.size())
 
         new_embeddings = (embedding_pairs * score_pairs_softmaxed).sum(dim=3)
@@ -481,7 +482,7 @@ class PyramidionsLayer(nn.Module):
             self.crossattention = PyramidionsAttention(config, position_embedding_type="absolute")
         self.intermediate = PyramidionsIntermediate(config)
         self.output = PyramidionsOutput(config)
-        self.pooler = TopKPooler(embedding_dim=config.hidden_size)
+        self.pooler = TopKPooler(embedding_dim=config.hidden_size, alpha=config.alpha)
 
     def forward(
         self,
