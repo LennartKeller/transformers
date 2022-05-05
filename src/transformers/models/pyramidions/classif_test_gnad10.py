@@ -87,7 +87,7 @@ trainer = Trainer(
     model=model,
     tokenizer=tokenizer,
     args=training_args,
-    data_collator=DataCollatorWithPadding(padding=True, max_length=tokenizer.model_max_length, tokenizer=tokenizer),
+    data_collator=DataCollatorWithPadding(padding="max_length", max_length=514, tokenizer=tokenizer),
     train_dataset=dataset["train"],
     eval_dataset=dataset["test"],
     compute_metrics=compute_metrics
