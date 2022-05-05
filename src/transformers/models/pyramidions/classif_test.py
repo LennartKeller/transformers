@@ -71,16 +71,18 @@ from transformers import Trainer, TrainingArguments, DataCollatorWithPadding
 # I think that the trainer is not using the right padding strategy....
 
 training_args = TrainingArguments(
-    num_train_epochs=1,
+    num_train_epochs=3,
     output_dir="pyramid_classif",
     logging_dir="pyramid_classif/logs",
-    per_device_train_batch_size=8,
-    learning_rate=2e-4,
+    per_device_train_batch_size=16,
+    per_device_eval_batch_size=32,
+    learning_rate=3e-5,
     logging_strategy="steps",
     logging_steps=1,
     evaluation_strategy="steps",
-    eval_steps=10
+    eval_steps=200
 )
+
 trainer = Trainer(
     model=model,
     tokenizer=tokenizer,
