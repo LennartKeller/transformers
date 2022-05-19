@@ -16,6 +16,7 @@
 """PyTorch pyramidions model."""
 
 import math
+from turtle import hideturtle
 from typing import List, Optional, Tuple, Union
 
 import torch
@@ -287,6 +288,11 @@ class PyramidionsSelfAttention(nn.Module):
         past_key_value: Optional[Tuple[Tuple[torch.FloatTensor]]] = None,
         output_attentions: Optional[bool] = False,
     ) -> Tuple[torch.Tensor]:
+
+        if self.is_decoder:
+            #print("I am a decoder")
+            #print("HS-Size:", hidden_states.size())
+            pass
         mixed_query_layer = self.query(hidden_states)
 
         # If this is instantiated as a cross-attention module, the keys
@@ -295,20 +301,24 @@ class PyramidionsSelfAttention(nn.Module):
         is_cross_attention = encoder_hidden_states is not None
 
         if is_cross_attention and past_key_value is not None:
+            #print("Cross attention and past_key_value != None")
             # reuse k,v, cross_attentions
             key_layer = past_key_value[0]
             value_layer = past_key_value[1]
             attention_mask = encoder_attention_mask
         elif is_cross_attention:
+            #print("cross attention")
             key_layer = self.transpose_for_scores(self.key(encoder_hidden_states))
             value_layer = self.transpose_for_scores(self.value(encoder_hidden_states))
             attention_mask = encoder_attention_mask
         elif past_key_value is not None:
+            #print("past_key_value != None")
             key_layer = self.transpose_for_scores(self.key(hidden_states))
             value_layer = self.transpose_for_scores(self.value(hidden_states))
             key_layer = torch.cat([past_key_value[0], key_layer], dim=2)
             value_layer = torch.cat([past_key_value[1], value_layer], dim=2)
         else:
+            #print("else")
             key_layer = self.transpose_for_scores(self.key(hidden_states))
             value_layer = self.transpose_for_scores(self.value(hidden_states))
 
@@ -345,6 +355,9 @@ class PyramidionsSelfAttention(nn.Module):
 
         attention_scores = attention_scores / math.sqrt(self.attention_head_size)
         if attention_mask is not None:
+            # ensure attention_mask is right format
+            # TODO: Is this the right wayyyyy???????????!!!!!!!
+            attention_mask = attention_mask[..., :attention_scores.size(-1)]
             attention_scores = attention_scores + attention_mask
 
         # Normalize the attention scores to probabilities.
@@ -357,7 +370,17 @@ class PyramidionsSelfAttention(nn.Module):
         # Mask heads if we want to
         if head_mask is not None:
             attention_probs = attention_probs * head_mask
+        if self.is_decoder:
+            #torch.Size([1, 12, 1, 1])
+            #print("Augmenting value_layer....")
+            #print("DECODER")
+            pass
 
+        #print(attention_probs.size())
+        #print(value_layer.size())
+        #print("_____")
+        #attention_probs = torch.tile(attention_probs, (1, 1, int(512/attention_probs.size(2)), 1))
+        
         context_layer = torch.matmul(attention_probs, value_layer)
 
         context_layer = context_layer.permute(0, 2, 1, 3).contiguous()
@@ -482,7 +505,8 @@ class PyramidionsLayer(nn.Module):
             self.crossattention = PyramidionsAttention(config, position_embedding_type="absolute")
         self.intermediate = PyramidionsIntermediate(config)
         self.output = PyramidionsOutput(config)
-        self.pooler = TopKPooler(embedding_dim=config.hidden_size, alpha=config.alpha)
+        if not self.is_decoder:
+            self.pooler = TopKPooler(embedding_dim=config.hidden_size, alpha=config.alpha)
 
     def forward(
         self,
