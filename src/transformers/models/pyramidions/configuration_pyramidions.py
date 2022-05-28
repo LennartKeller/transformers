@@ -72,11 +72,11 @@ class PyramidionsConfig(BertConfig):
                 raise LayerPoolingConfigException(
                     f"Number of hidden layers ({self.num_hidden_layers}) does not match number of entries in encoder_layer_pooling ({len(encoder_layer_pooling)})"
                     )
-            num_pooling_layer = sum(encoder_layer_pooling)
-            if self.max_position_embeddings * (0.5**num_pooling_layer) < 1.0:
-                raise LayerPoolingConfigException(
-                    f"Number of layers with pooling ({num_pooling_layer}) is too high."
-                )
+        num_pooling_layer = sum(encoder_layer_pooling)
+        if self.max_position_embeddings * (0.5**num_pooling_layer) < 1.0:
+            raise LayerPoolingConfigException(
+                f"Number of layers with pooling ({num_pooling_layer}) is too high."
+            )
         self.encoder_layer_pooling = encoder_layer_pooling
 
 
