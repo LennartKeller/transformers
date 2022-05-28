@@ -107,23 +107,21 @@ class TopKPooler(nn.Module):
         # Create embeddings pairs
 
         middle_idx = int(embeddings.size(1) // 2)
-        #print(middle_idx)
 
         left_embeddings, right_embeddings = embeddings_sorted[:, :middle_idx, :], embeddings_sorted[:, middle_idx:, :]
         embedding_pairs = torch.cat((left_embeddings.unsqueeze(3), right_embeddings.flip(1).unsqueeze(3)), dim=3)
-        #print(embedding_pairs.size())  # shape: bs, seqlen // 2, n_dim, 2
+        # shape: bs, seqlen // 2, n_dim, 2
 
         # Create score pairs
 
         left_scores, right_scores = scores_sorted[:, :middle_idx, :], scores_sorted[:, middle_idx:, :]
         score_pairs = torch.cat((left_scores.unsqueeze(3), right_scores.flip(1).unsqueeze(3)), dim=3)
-        #print(score_pairs.size())  # shape: bs, seqlen // 2, 1, 2
+        # shape: bs, seqlen // 2, 1, 2
 
         score_pairs_softmaxed = parametrized_softmax(score_pairs, alpha=self.alpha, dim=3)
-        #print(score_pairs_softmaxed.size())
 
         new_embeddings = (embedding_pairs * score_pairs_softmaxed).sum(dim=3)
-        #print(new_embeddings.size())
+
         return new_embeddings    
     
     def sort_embeddings(self, embeddings: Tensor, scores: Tensor) -> Tuple[Tensor]:
@@ -289,10 +287,6 @@ class PyramidionsSelfAttention(nn.Module):
         output_attentions: Optional[bool] = False,
     ) -> Tuple[torch.Tensor]:
 
-        if self.is_decoder:
-            #print("I am a decoder")
-            #print("HS-Size:", hidden_states.size())
-            pass
         mixed_query_layer = self.query(hidden_states)
 
         # If this is instantiated as a cross-attention module, the keys
@@ -370,16 +364,6 @@ class PyramidionsSelfAttention(nn.Module):
         # Mask heads if we want to
         if head_mask is not None:
             attention_probs = attention_probs * head_mask
-        if self.is_decoder:
-            #torch.Size([1, 12, 1, 1])
-            #print("Augmenting value_layer....")
-            #print("DECODER")
-            pass
-
-        #print(attention_probs.size())
-        #print(value_layer.size())
-        #print("_____")
-        #attention_probs = torch.tile(attention_probs, (1, 1, int(512/attention_probs.size(2)), 1))
         
         context_layer = torch.matmul(attention_probs, value_layer)
 
@@ -492,11 +476,12 @@ class PyramidionsOutput(nn.Module):
 
 # Copied from transformers.models.bert.modeling_bert.BertLayer with Bert->Pyramidions
 class PyramidionsLayer(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, layer_id: int = 0):
         super().__init__()
         self.chunk_size_feed_forward = config.chunk_size_feed_forward
         self.seq_len_dim = 1
         self.attention = PyramidionsAttention(config)
+        self.layer_id = layer_id
         self.is_decoder = config.is_decoder
         self.add_cross_attention = config.add_cross_attention
         if self.add_cross_attention:
@@ -505,7 +490,7 @@ class PyramidionsLayer(nn.Module):
             self.crossattention = PyramidionsAttention(config, position_embedding_type="absolute")
         self.intermediate = PyramidionsIntermediate(config)
         self.output = PyramidionsOutput(config)
-        if not self.is_decoder:
+        if not self.is_decoder and config.encoder_layer_pooling[self.layer_id]:
             self.pooler = TopKPooler(embedding_dim=config.hidden_size, alpha=config.alpha)
 
     def forward(
@@ -573,8 +558,8 @@ class PyramidionsLayer(nn.Module):
         # if decoder, return the attn key/values as the last output
         if self.is_decoder:
             outputs = outputs + (present_key_value,)
-        if not self.is_decoder:
-             outputs = (self.pooler(outputs[0]), ) + outputs[1:]
+        if hasattr(self, "pooler"):
+            outputs = (self.pooler(outputs[0]), ) + outputs[1:]
 
         return outputs
 
@@ -589,7 +574,7 @@ class PyramidionsEncoder(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.config = config
-        self.layer = nn.ModuleList([PyramidionsLayer(config) for _ in range(config.num_hidden_layers)])
+        self.layer = nn.ModuleList([PyramidionsLayer(config, layer_id=layer_id) for layer_id in range(config.num_hidden_layers)])
         self.gradient_checkpointing = False
 
     def forward(

@@ -15,7 +15,7 @@
 # limitations under the License.
 """ pyramidions configuration"""
 from collections import OrderedDict
-from typing import Mapping
+from typing import List, Mapping
 
 from ...onnx import OnnxConfig
 from ...utils import logging
@@ -29,6 +29,8 @@ PYRAMIDIONS_PRETRAINED_CONFIG_ARCHIVE_MAP = {
 }
 
 
+class LayerPoolingConfigException(Exception):
+    ...
 
 class PyramidionsConfig(BertConfig):
     r"""
@@ -59,10 +61,23 @@ class PyramidionsConfig(BertConfig):
     ```"""
     model_type = "pyramidions"
 
-    def __init__(self, pad_token_id=1, bos_token_id=0, eos_token_id=2, alpha: float = 3.0, **kwargs):
+    def __init__(self, pad_token_id=1, bos_token_id=0, eos_token_id=2, alpha: float = 3.0, encoder_layer_pooling: List[bool] = None, **kwargs):
         """Constructs PyramidionsConfig."""
         super().__init__(pad_token_id=pad_token_id, bos_token_id=bos_token_id, eos_token_id=eos_token_id, **kwargs)
         self.alpha = alpha
+        if encoder_layer_pooling is None:
+            encoder_layer_pooling = [True] * self.num_hidden_layers
+        else:
+            if len(encoder_layer_pooling) != self.num_hidden_layers:
+                raise LayerPoolingConfigException(
+                    f"Number of hidden layers ({self.num_hidden_layers}) does not match number of entries in encoder_layer_pooling ({len(encoder_layer_pooling)})"
+                    )
+            num_pooling_layer = sum(encoder_layer_pooling)
+            if self.max_position_embeddings * (0.5**num_pooling_layer) < 1.0:
+                raise LayerPoolingConfigException(
+                    f"Number of layers with pooling ({num_pooling_layer}) is too high."
+                )
+        self.encoder_layer_pooling = encoder_layer_pooling
 
 
 class PyramidionsOnnxConfig(OnnxConfig):
