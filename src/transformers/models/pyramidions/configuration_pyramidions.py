@@ -61,13 +61,13 @@ class PyramidionsConfig(BertConfig):
     ```"""
     model_type = "pyramidions"
 
-    def __init__(self, pad_token_id=1, bos_token_id=0, eos_token_id=2, alpha: float = 3.0, encoder_layer_pooling: List[bool] = None, **kwargs):
+    def __init__(self, pad_token_id=1, bos_token_id=0, eos_token_id=2, alpha: float = 1.0, encoder_layer_pooling: List[bool] = None, num_hidden_layers: int = 9, max_position_embeddings: int = 512, **kwargs):
         """Constructs PyramidionsConfig."""
-        super().__init__(pad_token_id=pad_token_id, bos_token_id=bos_token_id, eos_token_id=eos_token_id, **kwargs)
+        super().__init__(pad_token_id=pad_token_id, bos_token_id=bos_token_id, eos_token_id=eos_token_id, num_hidden_layers=num_hidden_layers, max_position_embeddings=max_position_embeddings, **kwargs)
         self.alpha = alpha
         if encoder_layer_pooling is None:
             encoder_layer_pooling = [True] * self.num_hidden_layers
-        else:
+        else: 
             if len(encoder_layer_pooling) != self.num_hidden_layers:
                 raise LayerPoolingConfigException(
                     f"Number of hidden layers ({self.num_hidden_layers}) does not match number of entries in encoder_layer_pooling ({len(encoder_layer_pooling)})"
