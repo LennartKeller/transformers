@@ -492,6 +492,7 @@ class PyramidionsLayer(nn.Module):
         self.output = PyramidionsOutput(config)
         if not self.is_decoder and config.encoder_layer_pooling[self.layer_id]:
             self.pooler = TopKPooler(embedding_dim=config.hidden_size, alpha=config.alpha)
+        self.n_blocks = config.n_blocks
 
     def forward(
         self,
@@ -509,14 +510,51 @@ class PyramidionsLayer(nn.Module):
         # FIXME: Hacky hack... But it actually seems to work...
         attention_mask = attention_mask[..., :hidden_states.size(1)]
         #print(f"Attention mask size: {attention_mask.size()}")
-        self_attention_outputs = self.attention(
-            hidden_states,
-            attention_mask,
-            head_mask,
-            output_attentions=output_attentions,
-            past_key_value=self_attn_past_key_value,
-        )
-        attention_output = self_attention_outputs[0]
+        use_block_attention = False
+        if (
+            self.n_blocks is not None and
+            hidden_states.size(1) // self.n_blocks >= 2 and
+            not self.is_decoder
+            ):
+            use_block_attention = True
+
+        if not use_block_attention:
+            self_attention_outputs = self.attention(
+                hidden_states,
+                attention_mask,
+                head_mask,
+                output_attentions=output_attentions,
+                past_key_value=self_attn_past_key_value,
+            )
+            attention_output = self_attention_outputs[0]
+        else:
+            batch_size = hidden_states.size(0)
+            embedding_dim = hidden_states.size(-1)
+
+            hidden_states_blocked = hidden_states.unfold(1, self.n_blocks, self.n_blocks) # BS, Chunk_Size, N_Feats, N_Chunks
+            hidden_states_blocked = hidden_states_blocked.permute(0, 3, 1, 2) # BS, N_Chunks, Chunk_Size, N_Feats
+
+            hidden_states_blocked = hidden_states_blocked.reshape(
+                -1, hidden_states_blocked.size(2), hidden_states_blocked.size(3)
+            ) # N_Chunks_Total, Chunk_Size, N_Feats
+
+            # TODO This certainly will fail hard if a custom head-mask is set...
+            attention_mask_blocked = attention_mask.unfold(3, self.n_blocks, self.n_blocks)
+            attention_mask_blocked = attention_mask_blocked.reshape(-1, *attention_mask_blocked.size()[1:-1])
+            self_attention_outputs_blocked = self.attention(
+                hidden_states=hidden_states_blocked,
+                attention_mask=attention_mask_blocked,
+                output_attentions=output_attentions,
+                past_key_value=self_attn_past_key_value, # TODO Check this param.    
+            )
+            new_hidden_states_blocked = self_attention_outputs_blocked[0]
+            new_hidden_states = new_hidden_states_blocked.reshape(batch_size, -1, embedding_dim)
+            self_attention_outputs = (new_hidden_states,) + self_attention_outputs_blocked[1:]
+            
+            attention_output = self_attention_outputs[0]
+
+
+
 
         # if decoder, the last output is tuple of self-attn cache
         if self.is_decoder:

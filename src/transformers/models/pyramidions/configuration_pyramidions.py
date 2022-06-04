@@ -17,6 +17,8 @@
 from collections import OrderedDict
 from typing import List, Mapping
 
+from psutil import net_connections
+
 from ...onnx import OnnxConfig
 from ...utils import logging
 from ..bert.configuration_bert import BertConfig
@@ -61,7 +63,7 @@ class PyramidionsConfig(BertConfig):
     ```"""
     model_type = "pyramidions"
 
-    def __init__(self, pad_token_id=1, bos_token_id=0, eos_token_id=2, alpha: float = 1.0, encoder_layer_pooling: List[bool] = None, num_hidden_layers: int = 9, max_position_embeddings: int = 512, **kwargs):
+    def __init__(self, pad_token_id=1, bos_token_id=0, eos_token_id=2, alpha: float = 1.0, encoder_layer_pooling: List[bool] = None, num_hidden_layers: int = 9, max_position_embeddings: int = 512, n_blocks: int = None, **kwargs):
         """Constructs PyramidionsConfig."""
         super().__init__(pad_token_id=pad_token_id, bos_token_id=bos_token_id, eos_token_id=eos_token_id, num_hidden_layers=num_hidden_layers, max_position_embeddings=max_position_embeddings, **kwargs)
         self.alpha = alpha
@@ -78,6 +80,7 @@ class PyramidionsConfig(BertConfig):
                 f"Number of layers with pooling ({num_pooling_layer}) is too high."
             )
         self.encoder_layer_pooling = encoder_layer_pooling
+        self.n_blocks = n_blocks
 
 
 class PyramidionsOnnxConfig(OnnxConfig):
